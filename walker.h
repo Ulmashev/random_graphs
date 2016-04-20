@@ -47,7 +47,7 @@ struct Random_variable {
 		//	sumdeg[i] = 0;
 		}
 		for (int i = 1; i <= maxdeg; i++) { //counting of non-normalized probabilities
-			p[i] = 1 / (pow((double)i, tau) * pow(e, (double)i / kappa));
+			p[i] = 1 / (pow((double)i, tau));// * pow(e, (double)i / kappa));
 			sum += p[i];
 		}
 		c = 1 / sum;
