@@ -23,7 +23,7 @@ using namespace std;
 #define TP 10
 
 struct Graph { //structure for the graph
-	double maxdeg, tau, kappa; // parametrs of the distribution
+	double maxdeg, tau_in, tau_out, kappa; // parametrs of the distribution
 	Set_of_degrees ind, outd, sumd; //oblects for keeping in-degrees, out-degrees and common degrees
 	int number_of_edges;
 	int delta;
@@ -32,9 +32,10 @@ struct Graph { //structure for the graph
 
 	vector <int> g[maxn]; //adjacency list for the graph
 
-	Graph(int MD, double T, double K) {
+	Graph(int MD, double T_in, double T_out, double K) {
 		maxdeg = MD;
-		tau = T;
+		tau_in = T_in;
+		tau_out = T_out;
 		kappa = K;
 		double sum = 0;
 		number_of_edges = 0;
@@ -189,8 +190,8 @@ struct Graph { //structure for the graph
 			outdeg[i] = 0;
 		}
 
-		Random_variable in = Random_variable(maxdeg, tau, kappa);
-		Random_variable out = Random_variable(maxdeg, tau, kappa);
+		Random_variable in = Random_variable(maxdeg, tau_in, kappa);
+		Random_variable out = Random_variable(maxdeg, tau_out, kappa);
 
 
 		for (int i = 0; i < n; i++) {

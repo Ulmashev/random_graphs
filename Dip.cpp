@@ -26,7 +26,7 @@ int main() {
 
 	freopen("dip.out", "w", stdout);
 
-	Graph gr = Graph(7, 0.52, 2.5);
+	Graph gr = Graph(7, 0.52, 0.52, 2.5);
 	gr.show_edges();
 	gr.statistics();
 	cout << endl;
