@@ -52,7 +52,7 @@ struct Random_variable {
 		}
 		c = 1 / sum;
 		for (int i = 1; i <= maxdeg; i++) { //normalization
-			p[i] = c / (pow((double)i, tau) * pow(e, (double)i / kappa));
+			p[i] = c / (pow((double)i, tau));// * pow(e, (double)i / kappa));
 			if (p[i] > uniform && abs(p[i] - uniform) > eps) //including recepients in the corresponding stack
 				recepient.push(make_pair(p[i], i));
 			else if (p[i] < uniform && abs(p[i] - uniform) > eps) //including donors in the corresponding stack 
