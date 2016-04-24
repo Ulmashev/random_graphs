@@ -15,7 +15,7 @@
 
 using namespace std;
 
-#define maxn 1000
+#define maxn 500
 #define e 2.7182818284590452
 #define eps 10e-7
 #define d 10000
@@ -31,6 +31,7 @@ struct Graph { //structure for the graph
 	int indeg[maxn], outdeg[maxn], sumdeg[maxn]; //arrays for in-degrees, out-degrees and common degrees (temporary arrays, data from them will be written in corresponding structures)
 
 	vector <int> g[maxn]; //adjacency list for the graph
+	bool adj[maxn][maxn];
 
 	Graph(int MD, double T_in, double T_out, double K) {
 		maxdeg = MD;
@@ -41,8 +42,10 @@ struct Graph { //structure for the graph
 		number_of_edges = 0;
 
 		srand(time(NULL));
-		while (!this->simulate()) {} //modeling graph until sums of in-degress and out-degress are equal
+		this->simulate(); //modeling graph until sums of in-degress and out-degress are equal
 		
+	//	return;
+
 		ind = Set_of_degrees();
 		outd = Set_of_degrees();
 		sumd = Set_of_degrees();
@@ -53,11 +56,46 @@ struct Graph { //structure for the graph
 			ind.values[i] = indeg[i];
 			sumd.values[i] = outdeg[i] + indeg[i];
 			number_of_edges += indeg[i];
+			for (int j = 0; j < n; j++)
+				adj[i][j] = 0;
+
 		}
 
 		int edges_left = number_of_edges; // the variable pointing on the number of unused edges 
-		
-		while (edges_left != 0) {  // matching nodes until there are any unused edges 
+
+		while (edges_left != 0) {
+			vector <pair <int, int> > available;
+			for (int i = 0; i < n; i++)
+				for (int j = 0; j < n; j++)
+					if (i != j && !adj[i][j] && outdeg[i] > 0 && indeg[j] > 0) {
+						available.push_back(make_pair(i, j));
+					}
+			if (available.size() == 0) {
+				break;
+			}
+			srand(time(NULL));
+			int edge = rand() % available.size();
+			int out = available[edge].first;
+			int in = available[edge].second;
+			adj[out][in] = 1;
+			outdeg[out]--;
+			indeg[in]--;
+			g[out].push_back(in);
+			edges_left--;
+		}
+		cout << "Edges left: " << edges_left << endl;
+		if (edges_left != 0) {
+			for (int i = 0; i < n; i++) { // recounting if there are edges left
+				ind.values[i] = 0;
+				outd.values[i] = 0;
+			}
+			for (int i = 0; i < n; i++) {
+				outd.values[i] = g[i].size();
+				for (int j = 0; j < g[i].size(); j++)
+					ind.values[g[i][j]]++;
+			}
+		}
+		/*while (edges_left != 0) {  // matching nodes until there are any unused edges 
 			vector <pair<int, int> > v_in; //vector for unused nodes and their in-degrees (for quick match)
 			vector <pair<int, int> > v_out;
 			for (int i = 0; i < n; i++) { //filling vectors
@@ -94,7 +132,7 @@ struct Graph { //structure for the graph
 			outd.values[i] = g[i].size();
 			for (int j = 0; j < g[i].size(); j++)
 				ind.values[g[i][j]]++;
-		}
+		}*/
 
 
 	}
@@ -181,7 +219,7 @@ struct Graph { //structure for the graph
 
 		return dist[b];
 	}
-	bool simulate() { // method for modeling pair of degrees 
+	void simulate() { // method for modeling pair of degrees 
 		int check_in = 0;
 		int check_out = 0;
 
@@ -201,10 +239,27 @@ struct Graph { //structure for the graph
 			check_out += outdeg[i];
 		}
 
-		if (check_in == check_out)
-			return true;
-		else
-			return false;
+		if (check_in != check_out) {
+			srand(time(NULL));
+			int node = rand() % n;
+			check_in -= indeg[node];
+			check_out -= outdeg[node];
+			if (check_in == check_out) {
+				indeg[node] = 1;
+				outdeg[node] = 1;
+			}
+			else if (check_in > check_out) {
+				outdeg[node] = check_in - check_out + 1;
+				indeg[node] = 1;
+			}
+			else {
+				outdeg[node] = 1;
+				indeg[node] = check_out - check_in + 1;
+			}
+
+
+
+		}
 	}
 	
 

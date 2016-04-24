@@ -13,13 +13,13 @@
 
 using namespace std;
 
-#define maxn 1000
+#define maxn 500
 #define e 2.7182818284590452
 #define eps 10e-7
 #define d 10000
 #define INF 10e7
 #define TP 10
-#define n 30
+#define n 100
 
 struct Set_of_degrees {    //struct for arrays of degrees and their statistical characteristics  
 	double values[maxn];
