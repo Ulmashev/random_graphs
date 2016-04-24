@@ -12,6 +12,7 @@
 #include <algorithm>
 #include "Set_of_degrees.h"
 #include "walker.h"
+#include "edge.h"
 
 using namespace std;
 
@@ -21,6 +22,7 @@ using namespace std;
 #define d 10000
 #define INF 10e7
 #define TP 10
+#define gamma 0.04
 
 struct Graph { //structure for the graph
 	double maxdeg, tau_in, tau_out, kappa; // parametrs of the distribution
@@ -29,8 +31,9 @@ struct Graph { //structure for the graph
 	int delta;
 
 	int indeg[maxn], outdeg[maxn], sumdeg[maxn]; //arrays for in-degrees, out-degrees and common degrees (temporary arrays, data from them will be written in corresponding structures)
+	double l[maxn], a_ib[maxn], a_m[maxn], dep[maxn];
 
-	vector <int> g[maxn]; //adjacency list for the graph
+	vector <Edge> g[maxn]; //adjacency list for the graph
 	bool adj[maxn][maxn];
 
 	Graph(int MD, double T_in, double T_out, double K) {
@@ -51,14 +54,16 @@ struct Graph { //structure for the graph
 		sumd = Set_of_degrees();
 
 
-		for (int i = 0; i < n; i++) { // transfer data from arrays to structures
+		for (int i = 0; i < n; i++) { // transfer data from arrays to structures and initializating
 			outd.values[i] = outdeg[i];
 			ind.values[i] = indeg[i];
 			sumd.values[i] = outdeg[i] + indeg[i];
 			number_of_edges += indeg[i];
 			for (int j = 0; j < n; j++)
 				adj[i][j] = 0;
-
+			a_m[i] = 0.8;
+			a_ib[i] = 0;
+			l[i] = 0;
 		}
 
 		int edges_left = number_of_edges; // the variable pointing on the number of unused edges 
@@ -80,66 +85,40 @@ struct Graph { //structure for the graph
 			adj[out][in] = 1;
 			outdeg[out]--;
 			indeg[in]--;
-			g[out].push_back(in);
+			g[out].push_back(Edge(in, 0));
 			edges_left--;
 		}
 		cout << "Edges left: " << edges_left << endl;
-		if (edges_left != 0) {
-			for (int i = 0; i < n; i++) { // recounting if there are edges left
+		if (edges_left != 0) { // recounting degrees if there are edges left
+			for (int i = 0; i < n; i++) { 
 				ind.values[i] = 0;
 				outd.values[i] = 0;
 			}
 			for (int i = 0; i < n; i++) {
 				outd.values[i] = g[i].size();
 				for (int j = 0; j < g[i].size(); j++)
-					ind.values[g[i][j]]++;
+					ind.values[g[i][j].u]++;
 			}
 		}
-		/*while (edges_left != 0) {  // matching nodes until there are any unused edges 
-			vector <pair<int, int> > v_in; //vector for unused nodes and their in-degrees (for quick match)
-			vector <pair<int, int> > v_out;
-			for (int i = 0; i < n; i++) { //filling vectors
-				if (indeg[i] != 0) v_in.push_back(make_pair(i, indeg[i]));
-				if (outdeg[i] != 0) v_out.push_back(make_pair(i, outdeg[i]));
-			}
-			srand(time(NULL));
-			int in = -1;
-			int out = -1;
-			if (v_in.size() == 1 && v_out.size() == 1 && v_in[0].first == v_out[0].first) { //the case when we can add only one edge but it is a self-loop
-				in = v_in[0].first;
-				out = v_out[0].first;
-				indeg[in]--;
-				outdeg[out]--;
-				edges_left--;
-			}
-			else { // else we need to choose a couple of nodes from v_in and v_out
-				while (in == out) {
-					in = v_in[rand() % v_in.size()].first; // taking an in-node randomly
-					out = v_out[rand() % v_out.size()].first; // taking an out-node randomly
-				}
-				g[out].push_back(in); 
-				indeg[in]--;
-				outdeg[out]--;
-				edges_left--;
-
-			}
+		for (int i = 0; i < n; i++) { //counting weights
+			for (int j = 0; j < g[i].size(); j++)
+				g[i][j].weight = 0.2 / ind.values[g[i][j].u];
 		}
-		for (int i = 0; i < n; i++) { //if there were some self-loops in the end, then we need to recount degrees
-			ind.values[i] = 0;
-			outd.values[i] = 0;
+		for (int i = 0; i < n; i++) { //counting financial parametrs
+			for (int j = 0; j < g[i].size(); j++) {
+				a_ib[g[i][j].u] += g[i][j].weight;
+				l[i] += g[i][j].weight;
+			}
 		}
 		for (int i = 0; i < n; i++) {
-			outd.values[i] = g[i].size();
-			for (int j = 0; j < g[i].size(); j++)
-				ind.values[g[i][j]]++;
-		}*/
-
+			dep[i] = 1 - l[i] - gamma;
+		}
 
 	}
 
 	bool existing_edge(int out, int in) {
 		for (int i = 0; i < g[out].size(); i++)
-			if (g[out][i] == in) return true;
+			if (g[out][i].u == in) return true;
 		return false;
 	}
 
@@ -147,7 +126,7 @@ struct Graph { //structure for the graph
 		cout << "List of edges:" << endl;
 		for (int i = 0; i < n; i++)
 			for (int j = 0; j < g[i].size(); j++)
-				cout << i + 1 << " " << g[i][j] + 1 << endl;
+				cout << i + 1 << " " << g[i][j].u + 1 << endl;
 	}
 
 	void statistics() { // method for statistics outputing  
@@ -209,7 +188,7 @@ struct Graph { //structure for the graph
 			u[v] = true;
 
 			for (int j = 0; j < g[v].size(); j++) {
-				int end = g[v][j];
+				int end = g[v][j].u;
 				if (dist[v] + 1 < dist[end]) {
 					dist[end] = dist[v] + 1;
 					prev[end] = v;
