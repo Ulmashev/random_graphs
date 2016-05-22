@@ -18,10 +18,11 @@ using namespace std;
 #define eps 10e-7
 #define d 10000
 #define INF 10e7
-#define TP 10
-#define n 100
+#define TP 3
+#define min_deg 4
 
 struct Random_variable {
+	int n;
 	double uniform, tau, kappa, maxdeg;
 	double threshold[maxn]; //array for thresholds
 	double p[maxn]; //array for current probabilities
@@ -33,7 +34,8 @@ struct Random_variable {
 	vector <pair <double, int> > v; //final vector of thresholds
 
 
-	Random_variable(int MD, double T, double K) {
+	Random_variable(int N, int MD, double T, double K) {
+		n = N;
 		maxdeg = MD;
 		tau = T;
 		kappa = K;
@@ -42,17 +44,16 @@ struct Random_variable {
 		for (int i = 0; i < maxn; i++) { //initialization
 			p[i] = 0;
 			threshold[i] = 0;
-		//	indeg[i] = 0;
-		//	outdeg[i] = 0;
-		//	sumdeg[i] = 0;
 		}
-		for (int i = 1; i <= maxdeg; i++) { //counting of non-normalized probabilities
-			p[i] = 1 / (pow((double)i, tau));// * pow(e, (double)i / kappa));
+		for (int i = 0; i < min_deg; i++)
+			p[i] = 0;
+		for (int i = min_deg; i <= maxdeg; i++) { //counting of non-normalized probabilities
+			p[i] = 1 / (pow((double)(i - min_deg + 1), tau)); // * pow(e, (double)i / kappa));
 			sum += p[i];
 		}
 		c = 1 / sum;
 		for (int i = 1; i <= maxdeg; i++) { //normalization
-			p[i] = c / (pow((double)i, tau));// * pow(e, (double)i / kappa));
+			p[i] = c * p[i];
 			if (p[i] > uniform && abs(p[i] - uniform) > eps) //including recepients in the corresponding stack
 				recepient.push(make_pair(p[i], i));
 			else if (p[i] < uniform && abs(p[i] - uniform) > eps) //including donors in the corresponding stack 
@@ -96,6 +97,5 @@ struct Random_variable {
 	}
 
 };
-
 
 #endif

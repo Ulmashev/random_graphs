@@ -18,20 +18,20 @@ using namespace std;
 #define eps 10e-7
 #define d 10000
 #define INF 10e7
-#define TP 10
-#define n 100
+#define TP 3
 
-struct Set_of_degrees {    //struct for arrays of degrees and their statistical characteristics  
+struct Set_of_degrees {    // struct for arrays of degrees and their statistical characteristics  
+	int n;
 	double values[maxn];
 	double mx, mn, average, med;
-	Set_of_degrees() {
+	void init(int N) {     // initialization
+		n = N;
 		for (int i = 0; i < n; i++)
 			values[i] = 0;
 		mx = -1;
 		mn = maxn + 1;
-
 	}
-	void top(int k) { //output of k best elements
+	void top(int k) { // output of k best elements
 		cout << "Top " << k << endl;
 		vector <int> v;
 		for (int i = 0; i < n; i++)
@@ -59,13 +59,13 @@ struct Set_of_degrees {    //struct for arrays of degrees and their statistical 
 			if (values[i] < mn)
 				mn = values[i];
 	}
-	void findaver() { //search of the average element in the array
+	void findaver() { // search of the average element in the array
 		double sum = 0;
 		for (int i = 0; i < n; i++)
 			sum += values[i];
 		average = sum / n;
 	}
-	void findmed() { //search of the median in the array
+	void findmed() { // search of the median in the array
 		vector <int> v;
 		for (int i = 0; i < n; i++)
 			v.push_back(values[i]);
